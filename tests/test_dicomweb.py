@@ -69,7 +69,7 @@ class TestDICOMwebProxy(unittest.TestCase):
             params={"limit": "1"},
             headers=DICOM_JSON_HEADERS,
         )
-        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}")
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text}")
         studies = resp.json()
         self.assertIsInstance(studies, list)
         self.assertGreater(len(studies), 0)
@@ -81,7 +81,7 @@ class TestDICOMwebProxy(unittest.TestCase):
             f"{self.base_url}/studies/{KNOWN_STUDY_UID}/series",
             headers=DICOM_JSON_HEADERS,
         )
-        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}")
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text}")
         series = resp.json()
         self.assertIsInstance(series, list)
         self.assertGreater(len(series), 0)
@@ -94,7 +94,7 @@ class TestDICOMwebProxy(unittest.TestCase):
             params={"limit": "5"},
             headers=DICOM_JSON_HEADERS,
         )
-        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}")
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text}")
         instances = resp.json()
         self.assertIsInstance(instances, list)
         self.assertGreater(len(instances), 0)
@@ -106,7 +106,7 @@ class TestDICOMwebProxy(unittest.TestCase):
             f"{self.base_url}/studies/{KNOWN_STUDY_UID}/series/{self.series_uid}/instances/{self.instance_uid}/metadata",
             headers=DICOM_JSON_HEADERS,
         )
-        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}")
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text}")
         metadata = resp.json()
         self.assertIsInstance(metadata, list)
         self.assertGreater(len(metadata), 0)
@@ -129,7 +129,7 @@ class TestDICOMwebGHC(unittest.TestCase):
             params={"limit": "1"},
             headers=self.headers,
         )
-        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}")
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text}")
         studies = resp.json()
         self.assertIsInstance(studies, list)
         self.assertGreater(len(studies), 0)
@@ -141,7 +141,7 @@ class TestDICOMwebGHC(unittest.TestCase):
             f"{self.base_url}/studies/{KNOWN_STUDY_UID}/series",
             headers=self.headers,
         )
-        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}")
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text}")
         series = resp.json()
         self.assertIsInstance(series, list)
         self.assertGreater(len(series), 0)

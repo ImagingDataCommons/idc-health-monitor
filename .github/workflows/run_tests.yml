@@ -30,6 +30,7 @@ jobs:
       env:
         PROJECT_ID: ${{ secrets.PROJECT_ID }}
       run: |
+        set -o pipefail
         python -m unittest -v tests/idc_tests.py tests/test_dicomweb.py 2>&1 | tee test_output.txt
 
     - name: Add test results to summary
