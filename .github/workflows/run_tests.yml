@@ -6,7 +6,6 @@ on:
   schedule:
     - cron: 30 7 * * *
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   run-tests:
    runs-on: ubuntu-latest
@@ -21,13 +20,22 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install requests google-cloud-bigquery google-auth
-        
-    - name: Run tests
+
+    - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v1
       with:
         credentials_json: '${{ secrets.BQ_SERVICE_ACCOUNT}}'
+
     - name: Run tests
       env:
         PROJECT_ID: ${{ secrets.PROJECT_ID }}
       run: |
-        python -m unittest -v tests/idc_tests.py tests/test_dicomweb.py
+        python -m unittest -v tests/idc_tests.py tests/test_dicomweb.py 2>&1 | tee test_output.txt
+
+    - name: Add test results to summary
+      if: always()
+      run: |
+        echo '## Test Results' >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        cat test_output.txt >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
