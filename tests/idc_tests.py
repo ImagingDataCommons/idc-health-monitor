@@ -22,7 +22,7 @@ portal_urls = { "one":"https://portal.imaging.datacommons.cancer.gov/explore",
 def pretty(response):
   print(json.dumps(response.json(), sort_keys=True, indent=4))
 
-class MyTest(unittest.TestCase):
+class TestIDCServices(unittest.TestCase):
     def test_bq_queries(self):
         print("Testing bq queries")
         # iterate over all queries in bq_queries dictionary and execute each query

@@ -69,7 +69,7 @@ class TestDICOMwebProxy(unittest.TestCase):
             params={"limit": "1"},
             headers=DICOM_JSON_HEADERS,
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}")
         studies = resp.json()
         self.assertIsInstance(studies, list)
         self.assertGreater(len(studies), 0)
@@ -81,7 +81,7 @@ class TestDICOMwebProxy(unittest.TestCase):
             f"{self.base_url}/studies/{KNOWN_STUDY_UID}/series",
             headers=DICOM_JSON_HEADERS,
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}")
         series = resp.json()
         self.assertIsInstance(series, list)
         self.assertGreater(len(series), 0)
@@ -94,7 +94,7 @@ class TestDICOMwebProxy(unittest.TestCase):
             params={"limit": "5"},
             headers=DICOM_JSON_HEADERS,
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}")
         instances = resp.json()
         self.assertIsInstance(instances, list)
         self.assertGreater(len(instances), 0)
@@ -106,7 +106,7 @@ class TestDICOMwebProxy(unittest.TestCase):
             f"{self.base_url}/studies/{KNOWN_STUDY_UID}/series/{self.series_uid}/instances/{self.instance_uid}/metadata",
             headers=DICOM_JSON_HEADERS,
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}")
         metadata = resp.json()
         self.assertIsInstance(metadata, list)
         self.assertGreater(len(metadata), 0)
@@ -120,6 +120,16 @@ class TestDICOMwebGHC(unittest.TestCase):
         """Authenticate and build the base URL."""
         cls.headers = get_ghc_auth_headers()
         cls.base_url = GHC_DICOMWEB_URL_TEMPLATE.format(version=IDC_VERSION)
+        # Verify access with a quick probe; skip all tests if 403
+        resp = requests.get(
+            f"{cls.base_url}/studies",
+            params={"limit": "1"},
+            headers=cls.headers,
+        )
+        if resp.status_code == 403:
+            raise unittest.SkipTest(
+                f"Service account lacks Healthcare API access (403 from {cls.base_url})"
+            )
 
     def test_qido_search_studies(self):
         """QIDO-RS: search for studies returns results (GHC)."""
@@ -129,7 +139,7 @@ class TestDICOMwebGHC(unittest.TestCase):
             params={"limit": "1"},
             headers=self.headers,
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}")
         studies = resp.json()
         self.assertIsInstance(studies, list)
         self.assertGreater(len(studies), 0)
@@ -141,7 +151,7 @@ class TestDICOMwebGHC(unittest.TestCase):
             f"{self.base_url}/studies/{KNOWN_STUDY_UID}/series",
             headers=self.headers,
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}")
         series = resp.json()
         self.assertIsInstance(series, list)
         self.assertGreater(len(series), 0)
