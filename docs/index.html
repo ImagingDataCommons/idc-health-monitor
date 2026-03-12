@@ -60,13 +60,12 @@
   .heatmap { overflow-x: auto; margin-bottom: 2rem; }
   .heatmap table { border-collapse: collapse; font-size: 0.75rem; }
   .heatmap th { padding: 0.25rem 0.5rem; text-align: left; color: var(--muted);
-    font-weight: normal; white-space: nowrap; position: sticky; left: 0; background: var(--bg); }
+    font-weight: normal; white-space: nowrap; position: sticky; left: 0; background: var(--bg); z-index: 1; }
   .heatmap td { padding: 2px; }
   .heatmap .cell { width: 20px; height: 20px; border-radius: 3px; display: block; }
   .heatmap .cell:hover { outline: 2px solid var(--fg); outline-offset: 1px; }
-  .heatmap .col-header { writing-mode: vertical-lr; text-orientation: mixed; transform: rotate(180deg);
-    padding: 0.5rem 0.125rem; font-size: 0.65rem; color: var(--muted); max-height: 100px;
-    overflow: hidden; white-space: nowrap; }
+  .heatmap .col-header { padding: 0 0.125rem 0.25rem; font-size: 0.65rem; color: var(--muted);
+    white-space: nowrap; text-align: center; }
 
   .tooltip { position: fixed; background: var(--card-bg); border: 1px solid var(--border);
     padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; pointer-events: none;
@@ -203,33 +202,33 @@ function renderHeatmap(data, allTestKeys) {
   container.className = 'heatmap';
   const table = document.createElement('table');
 
-  // Header row with test names
+  // Header row with dates (left to right = oldest to newest)
   let headerHtml = '<thead><tr><th></th>';
-  for (const [key, sample] of allTestKeys) {
-    headerHtml += `<td><div class="col-header" title="${key}">${sample.name}</div></td>`;
+  for (const run of data) {
+    const ts = new Date(run.timestamp);
+    const dateStr = ts.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    headerHtml += `<td><div class="col-header">${dateStr}</div></td>`;
   }
   headerHtml += '</tr></thead>';
   table.innerHTML = headerHtml;
 
   const tbody = document.createElement('tbody');
-  // Show runs in reverse chronological order
-  const runs = [...data].reverse();
-  for (const run of runs) {
+  // Each row is a test, each column is a run
+  for (const [key, sample] of allTestKeys) {
     const tr = document.createElement('tr');
-    const ts = new Date(run.timestamp);
-    const dateStr = ts.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const timeStr = ts.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    tr.innerHTML = `<th>${dateStr} ${timeStr}</th>`;
+    tr.innerHTML = `<th>${sample.class}.${sample.name}</th>`;
 
-    const testMap = new Map();
-    for (const t of run.tests) testMap.set(`${t.module}.${t.class}.${t.name}`, t);
-
-    for (const [key] of allTestKeys) {
+    for (const run of data) {
+      const testMap = new Map();
+      for (const t of run.tests) testMap.set(`${t.module}.${t.class}.${t.name}`, t);
       const t = testMap.get(key);
       const st = t ? t.status : 'none';
       const td = document.createElement('td');
+      const ts = new Date(run.timestamp);
+      const dateStr = ts.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const timeStr = ts.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
       const msg = t && t.message ? t.message.split('\n')[0].slice(0, 100) : '';
-      const tip = `${key}: ${st}${msg ? ' - ' + msg : ''}`;
+      const tip = `${dateStr} ${timeStr} - ${st}${msg ? ': ' + msg : ''}`;
       const url = run.run_url || '';
       td.innerHTML = `<a class="cell cell-${st}" href="${url}" target="_blank" data-tooltip="${escHtml(tip)}">&nbsp;</a>`;
       tr.appendChild(td);
