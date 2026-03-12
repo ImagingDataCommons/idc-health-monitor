@@ -71,6 +71,7 @@
     padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; pointer-events: none;
     z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 350px; }
 
+  .tests-table [data-tooltip], .heatmap th[data-tooltip] { cursor: help; }
   .loading { text-align: center; padding: 3rem; color: var(--muted); }
   .error-msg { text-align: center; padding: 3rem; color: var(--fail); }
 </style>
@@ -88,6 +89,25 @@
 
 <script>
 const DATA_URL = 'data/results.json';
+
+// Human-readable short names for tests, keyed by "class.method"
+const DISPLAY_NAMES = {
+  'TestIDCServices.test_bq_queries': 'BigQuery',
+  'TestIDCServices.test_prod_api': 'API (prod)',
+  'TestIDCServices.test_dev_api': 'API (dev)',
+  'TestIDCServices.test_is_portal_live': 'Portal',
+  'TestDICOMwebProxy.test_qido_search_studies': 'QIDO Studies (proxy)',
+  'TestDICOMwebProxy.test_qido_search_series': 'QIDO Series (proxy)',
+  'TestDICOMwebProxy.test_qido_search_instances': 'QIDO Instances (proxy)',
+  'TestDICOMwebProxy.test_wado_retrieve_instance_metadata': 'WADO Metadata (proxy)',
+  'TestDICOMwebGHC.test_qido_search_studies': 'QIDO Studies (GHC)',
+  'TestDICOMwebGHC.test_qido_search_series': 'QIDO Series (GHC)',
+};
+
+function displayName(t) {
+  const classMethod = `${t.class}.${t.name}`;
+  return DISPLAY_NAMES[classMethod] || classMethod;
+}
 
 async function init() {
   const app = document.getElementById('app');
@@ -170,7 +190,8 @@ function renderTestTable(data, allTestKeys) {
     const t = latestMap.get(key) || sample;
     const tr = document.createElement('tr');
     const statusBadge = `<span class="badge badge-${t.status}">${t.status}</span>`;
-    const shortName = `${t.class}.${t.name}`;
+    const friendly = displayName(t);
+    const technical = `${t.class}.${t.name}`;
     const dur = t.duration_s != null ? `${t.duration_s.toFixed(1)}s` : '-';
 
     // Build mini history bar
@@ -187,7 +208,7 @@ function renderTestTable(data, allTestKeys) {
 
     tr.innerHTML = `
       <td>${statusBadge}</td>
-      <td><strong>${shortName}</strong></td>
+      <td><strong data-tooltip="${technical}">${friendly}</strong></td>
       <td class="desc">${t.description || ''}</td>
       <td>${dur}</td>
       <td>${historyHtml}</td>`;
@@ -216,7 +237,9 @@ function renderHeatmap(data, allTestKeys) {
   // Each row is a test, each column is a run
   for (const [key, sample] of allTestKeys) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<th>${sample.class}.${sample.name}</th>`;
+    const friendly = displayName(sample);
+    const technical = `${sample.class}.${sample.name}`;
+    tr.innerHTML = `<th data-tooltip="${technical}">${friendly}</th>`;
 
     for (const run of data) {
       const testMap = new Map();
