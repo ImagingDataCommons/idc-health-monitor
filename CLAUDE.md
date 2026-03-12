@@ -30,6 +30,10 @@ python -m unittest -v tests.test_dicomweb.TestDICOMwebProxy
 - `tests/test_dicomweb.py` — DICOMweb QIDO-RS and WADO-RS health checks (proxy + Google Healthcare API)
 - `.github/workflows/run_tests.yml` — CI workflow (daily cron, push, manual dispatch)
 
+## Git workflow
+
+- Always ask for explicit permission before making any git commit or push. Never commit or push automatically.
+
 ## Conventions
 
 - Test framework: `unittest` (stdlib). No pytest.

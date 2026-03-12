@@ -120,16 +120,6 @@ class TestDICOMwebGHC(unittest.TestCase):
         """Authenticate and build the base URL."""
         cls.headers = get_ghc_auth_headers()
         cls.base_url = GHC_DICOMWEB_URL_TEMPLATE.format(version=IDC_VERSION)
-        # Verify access with a quick probe; skip all tests if 403
-        resp = requests.get(
-            f"{cls.base_url}/studies",
-            params={"limit": "1"},
-            headers=cls.headers,
-        )
-        if resp.status_code == 403:
-            raise unittest.SkipTest(
-                f"Service account lacks Healthcare API access (403 from {cls.base_url})"
-            )
 
     def test_qido_search_studies(self):
         """QIDO-RS: search for studies returns results (GHC)."""
