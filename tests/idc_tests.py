@@ -24,6 +24,7 @@ def pretty(response):
 
 class TestIDCServices(unittest.TestCase):
     def test_bq_queries(self):
+        """BigQuery: verify idc_current.dicom_all table is accessible."""
         print("Testing bq queries")
         # iterate over all queries in bq_queries dictionary and execute each query
         for query_name,query in bq_queries.items():
@@ -32,6 +33,7 @@ class TestIDCServices(unittest.TestCase):
             client.query(bq_queries[query_name]).result()
 
     def test_prod_api(self):
+        """IDC API: production /collections endpoint returns 200."""
         print("Testing prod api")
         response = requests.get('{}/collections'.format(idc_api_preamble))
         # Check that there wasn't an error with the request
@@ -43,6 +45,7 @@ class TestIDCServices(unittest.TestCase):
         #pretty(response)
 
     def test_dev_api(self):
+        """IDC API: development /collections endpoint returns 200."""
         print("Testing dev api")
         response = requests.get('{}/collections'.format(idc_dev_api_preamble))
         # Check that there wasn't an error with the request
@@ -54,6 +57,7 @@ class TestIDCServices(unittest.TestCase):
         #pretty(response)
 
     def test_is_portal_live(self):
+        """Portal: verify IDC portal URLs are reachable."""
         print("Testing portal")
         for key,portal_url in portal_urls.items():
             response = requests.head(portal_url)

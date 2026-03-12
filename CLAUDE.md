@@ -28,7 +28,10 @@ python -m unittest -v tests.test_dicomweb.TestDICOMwebProxy
 
 - `tests/idc_tests.py` — BigQuery, IDC API (prod + dev), and portal health checks
 - `tests/test_dicomweb.py` — DICOMweb QIDO-RS and WADO-RS health checks (proxy + Google Healthcare API)
+- `scripts/run_tests_json.py` — test runner that outputs structured JSON (used by CI and dashboard)
 - `.github/workflows/run_tests.yml` — CI workflow (daily cron, push, manual dispatch)
+- `docs/index.html` — GitHub Pages dashboard (single-file HTML/CSS/JS)
+- `docs/data/results.json` — historical test results (auto-updated by CI, last 90 runs)
 
 ## Git workflow
 

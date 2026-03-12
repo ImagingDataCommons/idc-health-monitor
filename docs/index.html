@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDC Health Monitor</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1a2e; --card-bg: #f8f9fa;
+    --border: #e5e7eb; --pass: #22c55e; --fail: #ef4444;
+    --skip: #f59e0b; --none: #d1d5db; --muted: #6b7280;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f172a; --fg: #e2e8f0; --card-bg: #1e293b;
+      --border: #334155; --none: #475569; --muted: #94a3b8;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg); color: var(--fg); padding: 2rem; max-width: 1200px; margin: 0 auto; }
+  a { color: var(--fg); }
+  h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+  .subtitle { color: var(--muted); font-size: 0.875rem; margin-bottom: 1.5rem; }
+  .subtitle a { color: var(--muted); text-decoration: underline; }
+
+  /* Status banner */
+  .banner { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem;
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 0.5rem; margin-bottom: 1.5rem; }
+  .banner-dot { width: 1rem; height: 1rem; border-radius: 50%; flex-shrink: 0; }
+  .banner-text { font-size: 0.9rem; }
+  .banner-meta { color: var(--muted); font-size: 0.8rem; margin-left: auto; text-align: right; }
+
+  /* Test table */
+  .tests-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; font-size: 0.85rem; }
+  .tests-table th { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 2px solid var(--border);
+    color: var(--muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+  .tests-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .tests-table tr:hover { background: var(--card-bg); }
+  .badge { display: inline-block; padding: 0.125rem 0.5rem; border-radius: 9999px;
+    font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+  .badge-pass { background: var(--pass); color: white; }
+  .badge-fail { background: var(--fail); color: white; }
+  .badge-error { background: var(--fail); color: white; }
+  .badge-skip { background: var(--skip); color: white; }
+  .desc { color: var(--muted); font-size: 0.8rem; }
+
+  /* History mini-bar */
+  .history-bar { display: flex; gap: 2px; align-items: center; }
+  .history-cell { width: 8px; height: 16px; border-radius: 2px; cursor: pointer; }
+  .history-cell:hover { outline: 2px solid var(--fg); outline-offset: 1px; }
+  .cell-pass { background: var(--pass); }
+  .cell-fail { background: var(--fail); }
+  .cell-error { background: var(--fail); }
+  .cell-skip { background: var(--skip); }
+  .cell-none { background: var(--none); }
+
+  /* History heatmap */
+  h2 { font-size: 1.1rem; margin-bottom: 1rem; }
+  .heatmap { overflow-x: auto; margin-bottom: 2rem; }
+  .heatmap table { border-collapse: collapse; font-size: 0.75rem; }
+  .heatmap th { padding: 0.25rem 0.5rem; text-align: left; color: var(--muted);
+    font-weight: normal; white-space: nowrap; position: sticky; left: 0; background: var(--bg); }
+  .heatmap td { padding: 2px; }
+  .heatmap .cell { width: 20px; height: 20px; border-radius: 3px; display: block; }
+  .heatmap .cell:hover { outline: 2px solid var(--fg); outline-offset: 1px; }
+  .heatmap .col-header { writing-mode: vertical-lr; text-orientation: mixed; transform: rotate(180deg);
+    padding: 0.5rem 0.125rem; font-size: 0.65rem; color: var(--muted); max-height: 100px;
+    overflow: hidden; white-space: nowrap; }
+
+  .tooltip { position: fixed; background: var(--card-bg); border: 1px solid var(--border);
+    padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; pointer-events: none;
+    z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 350px; }
+
+  .loading { text-align: center; padding: 3rem; color: var(--muted); }
+  .error-msg { text-align: center; padding: 3rem; color: var(--fail); }
+</style>
+</head>
+<body>
+
+<h1>IDC Health Monitor</h1>
+<p class="subtitle">
+  Automated health checks for <a href="https://imaging.datacommons.cancer.gov/">NCI Imaging Data Commons</a>
+  &mdash; <a href="https://github.com/ImagingDataCommons/idc-health-monitor">source</a>
+</p>
+
+<div id="app"><div class="loading">Loading results...</div></div>
+<div id="tooltip" class="tooltip" style="display:none"></div>
+
+<script>
+const DATA_URL = 'data/results.json';
+
+async function init() {
+  const app = document.getElementById('app');
+  try {
+    const resp = await fetch(DATA_URL);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    if (!data.length) {
+      app.innerHTML = '<div class="loading">No test results yet. Results will appear after the first CI run.</div>';
+      return;
+    }
+    render(app, data);
+  } catch (e) {
+    app.innerHTML = `<div class="error-msg">Failed to load results: ${e.message}</div>`;
+  }
+}
+
+function render(app, data) {
+  const latest = data[data.length - 1];
+  const allTestKeys = getTestKeys(data);
+
+  app.innerHTML = '';
+  app.appendChild(renderBanner(latest));
+  app.appendChild(renderTestTable(data, allTestKeys));
+
+  const h2 = document.createElement('h2');
+  h2.textContent = `History (last ${data.length} runs)`;
+  app.appendChild(h2);
+  app.appendChild(renderHeatmap(data, allTestKeys));
+
+  setupTooltip();
+}
+
+function getTestKeys(data) {
+  const seen = new Map();
+  for (const run of data) {
+    for (const t of run.tests) {
+      const key = `${t.module}.${t.class}.${t.name}`;
+      if (!seen.has(key)) seen.set(key, t);
+    }
+  }
+  return [...seen.entries()];
+}
+
+function renderBanner(latest) {
+  const s = latest.summary;
+  const ok = s.failed === 0 && s.errors === 0;
+  const div = document.createElement('div');
+  div.className = 'banner';
+  const ts = new Date(latest.timestamp);
+  const commit = latest.commit_sha ? latest.commit_sha.slice(0, 7) : '';
+  const runLink = latest.run_url ? `<a href="${latest.run_url}" target="_blank">View run</a>` : '';
+
+  div.innerHTML = `
+    <div class="banner-dot" style="background:${ok ? 'var(--pass)' : 'var(--fail)'}"></div>
+    <div class="banner-text">
+      <strong>${ok ? 'All checks passing' : `${s.failed + s.errors} check(s) failing`}</strong>
+      &mdash; ${s.passed} passed, ${s.failed} failed${s.errors ? `, ${s.errors} errors` : ''}${s.skipped ? `, ${s.skipped} skipped` : ''} of ${s.total}
+    </div>
+    <div class="banner-meta">
+      ${ts.toLocaleDateString()} ${ts.toLocaleTimeString()}<br>
+      ${commit} ${runLink}
+    </div>`;
+  return div;
+}
+
+function renderTestTable(data, allTestKeys) {
+  const latest = data[data.length - 1];
+  const latestMap = new Map();
+  for (const t of latest.tests) latestMap.set(`${t.module}.${t.class}.${t.name}`, t);
+
+  const table = document.createElement('table');
+  table.className = 'tests-table';
+  table.innerHTML = `<thead><tr>
+    <th>Status</th><th>Test</th><th>Description</th><th>Duration</th><th>Last ${Math.min(data.length, 30)} runs</th>
+  </tr></thead>`;
+
+  const tbody = document.createElement('tbody');
+  for (const [key, sample] of allTestKeys) {
+    const t = latestMap.get(key) || sample;
+    const tr = document.createElement('tr');
+    const statusBadge = `<span class="badge badge-${t.status}">${t.status}</span>`;
+    const shortName = `${t.class}.${t.name}`;
+    const dur = t.duration_s != null ? `${t.duration_s.toFixed(1)}s` : '-';
+
+    // Build mini history bar
+    const recent = data.slice(-30);
+    let historyHtml = '<div class="history-bar">';
+    for (const run of recent) {
+      const rt = run.tests.find(x => `${x.module}.${x.class}.${x.name}` === key);
+      const st = rt ? rt.status : 'none';
+      const title = `${new Date(run.timestamp).toLocaleDateString()} - ${st}`;
+      const url = run.run_url || '';
+      historyHtml += `<div class="history-cell cell-${st}" data-tooltip="${title}" data-url="${url}"></div>`;
+    }
+    historyHtml += '</div>';
+
+    tr.innerHTML = `
+      <td>${statusBadge}</td>
+      <td><strong>${shortName}</strong></td>
+      <td class="desc">${t.description || ''}</td>
+      <td>${dur}</td>
+      <td>${historyHtml}</td>`;
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  return table;
+}
+
+function renderHeatmap(data, allTestKeys) {
+  const container = document.createElement('div');
+  container.className = 'heatmap';
+  const table = document.createElement('table');
+
+  // Header row with test names
+  let headerHtml = '<thead><tr><th></th>';
+  for (const [key, sample] of allTestKeys) {
+    headerHtml += `<td><div class="col-header" title="${key}">${sample.name}</div></td>`;
+  }
+  headerHtml += '</tr></thead>';
+  table.innerHTML = headerHtml;
+
+  const tbody = document.createElement('tbody');
+  // Show runs in reverse chronological order
+  const runs = [...data].reverse();
+  for (const run of runs) {
+    const tr = document.createElement('tr');
+    const ts = new Date(run.timestamp);
+    const dateStr = ts.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const timeStr = ts.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    tr.innerHTML = `<th>${dateStr} ${timeStr}</th>`;
+
+    const testMap = new Map();
+    for (const t of run.tests) testMap.set(`${t.module}.${t.class}.${t.name}`, t);
+
+    for (const [key] of allTestKeys) {
+      const t = testMap.get(key);
+      const st = t ? t.status : 'none';
+      const td = document.createElement('td');
+      const msg = t && t.message ? t.message.split('\n')[0].slice(0, 100) : '';
+      const tip = `${key}: ${st}${msg ? ' - ' + msg : ''}`;
+      const url = run.run_url || '';
+      td.innerHTML = `<a class="cell cell-${st}" href="${url}" target="_blank" data-tooltip="${escHtml(tip)}">&nbsp;</a>`;
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  container.appendChild(table);
+  return container;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function setupTooltip() {
+  const tip = document.getElementById('tooltip');
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest('[data-tooltip]');
+    if (el) {
+      tip.textContent = el.dataset.tooltip;
+      tip.style.display = 'block';
+    }
+  });
+  document.addEventListener('mousemove', e => {
+    if (tip.style.display === 'block') {
+      tip.style.left = (e.clientX + 12) + 'px';
+      tip.style.top = (e.clientY + 12) + 'px';
+    }
+  });
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest('[data-tooltip]')) tip.style.display = 'none';
+  });
+
+  // Click on history cells to open run URL
+  document.addEventListener('click', e => {
+    const cell = e.target.closest('.history-cell[data-url]');
+    if (cell && cell.dataset.url) window.open(cell.dataset.url, '_blank');
+  });
+}
+
+init();
+</script>
+</body>
+</html>

@@ -2,6 +2,8 @@
 
 Automated health checks for [NCI Imaging Data Commons](https://imaging.datacommons.cancer.gov/) services. Runs daily via GitHub Actions to verify that IDC infrastructure is operational.
 
+**Live dashboard:** [imagingdatacommons.github.io/idc-health-monitor](https://imagingdatacommons.github.io/idc-health-monitor/)
+
 ## What's monitored
 
 | Service | Test file | Auth required |
@@ -62,8 +64,9 @@ The workflow (`.github/workflows/run_tests.yml`) runs on:
 ## Adding new tests
 
 1. Create a new test file in `tests/` following the `unittest.TestCase` pattern
-2. Add the file to the `python -m unittest` command in `.github/workflows/run_tests.yml`
-3. Add any new pip dependencies to the workflow's install step
+2. Add docstrings to test methods (displayed on the dashboard)
+3. Import and load the new module in `scripts/run_tests_json.py`
+4. Add any new pip dependencies to the workflow's install step
 
 ## Key constants to maintain
 
