@@ -31,6 +31,7 @@
     background: var(--card-bg); border: 1px solid var(--border); border-radius: 0.5rem; margin-bottom: 1.5rem; }
   .banner-dot { width: 1rem; height: 1rem; border-radius: 50%; flex-shrink: 0; }
   .banner-text { font-size: 0.9rem; }
+  .banner-text .breakdown { color: var(--muted); font-size: 0.8rem; margin-top: 0.25rem; }
   .banner-meta { color: var(--muted); font-size: 0.8rem; margin-left: auto; text-align: right; }
 
   /* Test table */
@@ -45,7 +46,13 @@
   .badge-fail { background: var(--fail); color: white; }
   .badge-error { background: var(--fail); color: white; }
   .badge-skip { background: var(--skip); color: white; }
-  .desc { color: var(--muted); font-size: 0.8rem; }
+
+  /* Group headers */
+  .group-header td { padding: 0.6rem 0.75rem; font-weight: 600; font-size: 0.85rem;
+    cursor: pointer; user-select: none; background: var(--card-bg); border-bottom: 2px solid var(--border); }
+  .group-header td:hover { opacity: 0.8; }
+  .group-header .group-summary { font-weight: normal; color: var(--muted); font-size: 0.8rem; margin-left: 0.5rem; }
+  .group-row.collapsed { display: none; }
 
   /* History mini-bar */
   .history-bar { display: flex; gap: 2px; align-items: center; }
@@ -63,6 +70,8 @@
   .heatmap table { border-collapse: collapse; font-size: 0.75rem; }
   .heatmap th { padding: 0.25rem 0.5rem; text-align: left; color: var(--muted);
     font-weight: normal; white-space: nowrap; position: sticky; left: 0; background: var(--bg); z-index: 1; }
+  .heatmap th.heatmap-group { font-weight: 600; font-size: 0.8rem; color: var(--fg);
+    padding-top: 0.75rem; }
   .heatmap td { padding: 2px; }
   .heatmap .cell { width: 20px; height: 20px; border-radius: 3px; display: block; }
   .heatmap .cell:hover { outline: 2px solid var(--fg); outline-offset: 1px; }
@@ -71,7 +80,7 @@
 
   .tooltip { position: fixed; background: var(--card-bg); border: 1px solid var(--border);
     padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; pointer-events: none;
-    z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 350px; }
+    z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 350px; white-space: pre-line; }
 
   .tests-table [data-tooltip], .heatmap th[data-tooltip] { cursor: help; }
   .loading { text-align: center; padding: 3rem; color: var(--muted); }
@@ -92,7 +101,6 @@
 <script>
 const DATA_URL = 'data/results.json';
 
-// Human-readable short names for tests, keyed by "class.method"
 const DISPLAY_NAMES = {
   'TestIDCServices.test_bq_queries': 'BigQuery',
   'TestIDCServices.test_prod_api': 'API (prod)',
@@ -112,6 +120,12 @@ const DISPLAY_NAMES = {
   'TestDICOMwebGHC.test_wado_retrieve_seg_frame': 'WADO SEG Frame (GHC)',
 };
 
+const GROUPS = [
+  { id: 'idc', title: 'IDC Services', match: t => t.class === 'TestIDCServices' },
+  { id: 'proxy', title: 'DICOMweb Proxy', match: t => t.class === 'TestDICOMwebProxy' },
+  { id: 'ghc', title: 'DICOMweb GHC', match: t => t.class === 'TestDICOMwebGHC' },
+];
+
 function testKey(t) {
   const base = `${t.module}.${t.class}.${t.name}`;
   return t.label ? `${base}:${t.label}` : base;
@@ -121,6 +135,12 @@ function displayName(t) {
   const classMethod = `${t.class}.${t.name}`;
   const base = DISPLAY_NAMES[classMethod] || classMethod;
   return t.label ? `${base} [${t.label}]` : base;
+}
+
+// Status priority for "worst status" aggregation
+const STATUS_PRIORITY = { error: 0, fail: 1, skip: 2, pass: 3, none: 4 };
+function worstStatus(a, b) {
+  return (STATUS_PRIORITY[a] ?? 4) <= (STATUS_PRIORITY[b] ?? 4) ? a : b;
 }
 
 async function init() {
@@ -140,7 +160,6 @@ async function init() {
 }
 
 function render(app, data) {
-  // Find the latest run per label to show combined banner
   const latestByLabel = new Map();
   for (const run of data) {
     const lbl = run.label || '';
@@ -149,15 +168,14 @@ function render(app, data) {
   const allTestKeys = getTestKeys(data);
 
   app.innerHTML = '';
-  for (const [lbl, latest] of latestByLabel) {
-    app.appendChild(renderBanner(latest, lbl));
-  }
+  app.appendChild(renderBanner(latestByLabel));
   app.appendChild(renderTestTable(data, allTestKeys));
 
+  const dateGroups = groupRunsByDate(data);
   const h2 = document.createElement('h2');
-  h2.textContent = `History (last ${data.length} runs)`;
+  h2.textContent = `History (last ${dateGroups.size} days)`;
   app.appendChild(h2);
-  app.appendChild(renderHeatmap(data, allTestKeys));
+  app.appendChild(renderHeatmap(dateGroups, allTestKeys));
 
   setupTooltip();
 }
@@ -173,31 +191,60 @@ function getTestKeys(data) {
   return [...seen.entries()];
 }
 
-function renderBanner(latest, label) {
-  const s = latest.summary;
-  const ok = s.failed === 0 && s.errors === 0;
+function groupRunsByDate(data) {
+  const byDate = new Map();
+  for (const run of data) {
+    const dateKey = new Date(run.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (!byDate.has(dateKey)) byDate.set(dateKey, []);
+    byDate.get(dateKey).push(run);
+  }
+  return byDate;
+}
+
+function renderBanner(latestByLabel) {
+  let totalPassed = 0, totalFailed = 0, totalErrors = 0, totalSkipped = 0, totalTests = 0;
+  const parts = [];
+  let latestTs = null;
+  let latestRun = null;
+
+  for (const [lbl, run] of latestByLabel) {
+    const s = run.summary;
+    totalPassed += s.passed;
+    totalFailed += s.failed;
+    totalErrors += s.errors;
+    totalSkipped += s.skipped;
+    totalTests += s.total;
+    const label = lbl || 'default';
+    parts.push(`${s.passed}/${s.total} passed (${label})`);
+    const ts = new Date(run.timestamp);
+    if (!latestTs || ts > latestTs) { latestTs = ts; latestRun = run; }
+  }
+
+  const ok = totalFailed === 0 && totalErrors === 0;
   const div = document.createElement('div');
   div.className = 'banner';
-  const ts = new Date(latest.timestamp);
-  const commit = latest.commit_sha ? latest.commit_sha.slice(0, 7) : '';
-  const runLink = latest.run_url ? `<a href="${latest.run_url}" target="_blank">View run</a>` : '';
-  const labelTag = label ? ` [${label}]` : '';
+  const commit = latestRun.commit_sha ? latestRun.commit_sha.slice(0, 7) : '';
+  const runLink = latestRun.run_url ? `<a href="${latestRun.run_url}" target="_blank">View run</a>` : '';
+
+  const headline = ok
+    ? 'All checks passing'
+    : `${totalFailed + totalErrors} check(s) failing`;
 
   div.innerHTML = `
     <div class="banner-dot" style="background:${ok ? 'var(--pass)' : 'var(--fail)'}"></div>
     <div class="banner-text">
-      <strong>${ok ? 'All checks passing' : `${s.failed + s.errors} check(s) failing`}${labelTag}</strong>
-      &mdash; ${s.passed} passed, ${s.failed} failed${s.errors ? `, ${s.errors} errors` : ''}${s.skipped ? `, ${s.skipped} skipped` : ''} of ${s.total}
+      <strong>${headline}</strong>
+      &mdash; ${totalPassed} passed, ${totalFailed} failed${totalErrors ? `, ${totalErrors} errors` : ''}${totalSkipped ? `, ${totalSkipped} skipped` : ''} of ${totalTests}
+      ${parts.length > 1 ? `<div class="breakdown">${parts.join(' · ')}</div>` : ''}
     </div>
     <div class="banner-meta">
-      ${ts.toLocaleDateString()} ${ts.toLocaleTimeString()}<br>
+      ${latestTs.toLocaleDateString()} ${latestTs.toLocaleTimeString()}<br>
       ${commit} ${runLink}
     </div>`;
   return div;
 }
 
 function renderTestTable(data, allTestKeys) {
-  // Build a map from all latest runs (one per label)
   const latestMap = new Map();
   for (const run of data) {
     for (const t of run.tests) latestMap.set(testKey(t), t);
@@ -205,82 +252,161 @@ function renderTestTable(data, allTestKeys) {
 
   const table = document.createElement('table');
   table.className = 'tests-table';
+
+  const dateGroups = groupRunsByDate(data);
+  const numDays = dateGroups.size;
+
   table.innerHTML = `<thead><tr>
-    <th>Status</th><th>Test</th><th>Description</th><th>Duration</th><th>Last ${Math.min(data.length, 30)} runs</th>
+    <th>Status</th><th>Test</th><th>Duration</th><th>Last ${Math.min(numDays, 30)} days</th>
   </tr></thead>`;
 
   const tbody = document.createElement('tbody');
-  for (const [key, sample] of allTestKeys) {
-    const t = latestMap.get(key) || sample;
-    const tr = document.createElement('tr');
-    const statusBadge = `<span class="badge badge-${t.status}">${t.status}</span>`;
-    const friendly = displayName(t);
-    const technical = `${t.class}.${t.name}`;
-    const dur = t.duration_s != null ? `${t.duration_s.toFixed(1)}s` : '-';
 
-    // Build mini history bar
-    const recent = data.slice(-30);
-    let historyHtml = '<div class="history-bar">';
-    for (const run of recent) {
-      const rt = run.tests.find(x => testKey(x) === key);
-      const st = rt ? rt.status : 'none';
-      const title = `${new Date(run.timestamp).toLocaleDateString()} - ${st}`;
-      const url = run.run_url || '';
-      historyHtml += `<div class="history-cell cell-${st}" data-tooltip="${title}" data-url="${url}"></div>`;
+  for (const group of GROUPS) {
+    const groupKeys = allTestKeys.filter(([key, sample]) => group.match(sample));
+    if (groupKeys.length === 0) continue;
+
+    // Sort: default tests first, then whitelisted, within each: by test name
+    groupKeys.sort((a, b) => {
+      const aBase = `${a[1].class}.${a[1].name}`;
+      const bBase = `${b[1].class}.${b[1].name}`;
+      if (aBase !== bBase) return aBase.localeCompare(bBase);
+      const aLabel = a[1].label || '';
+      const bLabel = b[1].label || '';
+      return aLabel.localeCompare(bLabel);
+    });
+
+    // Count pass/fail for group
+    let groupPass = 0, groupTotal = 0;
+    for (const [key, sample] of groupKeys) {
+      const t = latestMap.get(key);
+      if (t) {
+        groupTotal++;
+        if (t.status === 'pass') groupPass++;
+      }
     }
-    historyHtml += '</div>';
 
-    tr.innerHTML = `
-      <td>${statusBadge}</td>
-      <td><strong data-tooltip="${technical}">${friendly}</strong></td>
-      <td class="desc">${t.description || ''}</td>
-      <td>${dur}</td>
-      <td>${historyHtml}</td>`;
-    tbody.appendChild(tr);
+    // Group header row
+    const headerTr = document.createElement('tr');
+    headerTr.className = 'group-header';
+    headerTr.dataset.group = group.id;
+    headerTr.onclick = () => toggleGroup(group.id);
+    const arrow = '▾';
+    headerTr.innerHTML = `<td colspan="4">${arrow} ${group.title}<span class="group-summary">${groupPass}/${groupTotal} passing</span></td>`;
+    tbody.appendChild(headerTr);
+
+    // Test rows
+    for (const [key, sample] of groupKeys) {
+      const t = latestMap.get(key) || sample;
+      const tr = document.createElement('tr');
+      tr.className = `group-row group-${group.id}`;
+      const statusBadge = `<span class="badge badge-${t.status}">${t.status}</span>`;
+      const friendly = displayName(t);
+      const technical = `${t.class}.${t.name}`;
+      const desc = t.description || '';
+      const tipText = desc ? `${technical}\n${desc}` : technical;
+      const dur = t.duration_s != null ? `${t.duration_s.toFixed(1)}s` : '-';
+
+      // Build mini history bar — one cell per date
+      let historyHtml = '<div class="history-bar">';
+      const recentDates = [...dateGroups.entries()].slice(-30);
+      for (const [dateKey, runs] of recentDates) {
+        let st = 'none';
+        let runUrl = '';
+        for (const run of runs) {
+          const rt = run.tests.find(x => testKey(x) === key);
+          if (rt) {
+            st = worstStatus(st, rt.status);
+            runUrl = run.run_url || runUrl;
+          }
+        }
+        const title = `${dateKey} - ${st}`;
+        historyHtml += `<div class="history-cell cell-${st}" data-tooltip="${title}" data-url="${runUrl}"></div>`;
+      }
+      historyHtml += '</div>';
+
+      tr.innerHTML = `
+        <td>${statusBadge}</td>
+        <td><strong data-tooltip="${escHtml(tipText)}">${friendly}</strong></td>
+        <td>${dur}</td>
+        <td>${historyHtml}</td>`;
+      tbody.appendChild(tr);
+    }
   }
   table.appendChild(tbody);
   return table;
 }
 
-function renderHeatmap(data, allTestKeys) {
+function toggleGroup(groupId) {
+  const rows = document.querySelectorAll(`.group-${groupId}`);
+  const header = document.querySelector(`.group-header[data-group="${groupId}"]`);
+  const isCollapsed = rows[0]?.classList.contains('collapsed');
+  rows.forEach(r => r.classList.toggle('collapsed', !isCollapsed));
+  // Update arrow
+  const td = header.querySelector('td');
+  td.innerHTML = td.innerHTML.replace(/^[▾▸]/, isCollapsed ? '▾' : '▸');
+}
+
+function renderHeatmap(dateGroups, allTestKeys) {
   const container = document.createElement('div');
   container.className = 'heatmap';
   const table = document.createElement('table');
 
-  // Header row with dates (left to right = oldest to newest)
+  // Header row with dates
   let headerHtml = '<thead><tr><th></th>';
-  for (const run of data) {
-    const ts = new Date(run.timestamp);
-    const dateStr = ts.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    headerHtml += `<td><div class="col-header">${dateStr}</div></td>`;
+  for (const [dateKey] of dateGroups) {
+    headerHtml += `<td><div class="col-header">${dateKey}</div></td>`;
   }
   headerHtml += '</tr></thead>';
   table.innerHTML = headerHtml;
 
   const tbody = document.createElement('tbody');
-  // Each row is a test, each column is a run
-  for (const [key, sample] of allTestKeys) {
-    const tr = document.createElement('tr');
-    const friendly = displayName(sample);
-    const technical = `${sample.class}.${sample.name}${sample.label ? ' [' + sample.label + ']' : ''}`;
-    tr.innerHTML = `<th data-tooltip="${technical}">${friendly}</th>`;
 
-    for (const run of data) {
-      const testMap = new Map();
-      for (const t of run.tests) testMap.set(testKey(t), t);
-      const t = testMap.get(key);
-      const st = t ? t.status : 'none';
-      const td = document.createElement('td');
-      const ts = new Date(run.timestamp);
-      const dateStr = ts.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      const timeStr = ts.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-      const msg = t && t.message ? t.message.split('\n')[0].slice(0, 100) : '';
-      const tip = `${dateStr} ${timeStr} - ${st}${msg ? ': ' + msg : ''}`;
-      const url = run.run_url || '';
-      td.innerHTML = `<a class="cell cell-${st}" href="${url}" target="_blank" data-tooltip="${escHtml(tip)}">&nbsp;</a>`;
-      tr.appendChild(td);
+  for (const group of GROUPS) {
+    const groupKeys = allTestKeys.filter(([key, sample]) => group.match(sample));
+    if (groupKeys.length === 0) continue;
+
+    groupKeys.sort((a, b) => {
+      const aBase = `${a[1].class}.${a[1].name}`;
+      const bBase = `${b[1].class}.${b[1].name}`;
+      if (aBase !== bBase) return aBase.localeCompare(bBase);
+      return (a[1].label || '').localeCompare(b[1].label || '');
+    });
+
+    // Group header in heatmap
+    const groupTr = document.createElement('tr');
+    groupTr.innerHTML = `<th class="heatmap-group" colspan="${dateGroups.size + 1}">${group.title}</th>`;
+    tbody.appendChild(groupTr);
+
+    for (const [key, sample] of groupKeys) {
+      const tr = document.createElement('tr');
+      const friendly = displayName(sample);
+      const technical = `${sample.class}.${sample.name}${sample.label ? ' [' + sample.label + ']' : ''}`;
+      tr.innerHTML = `<th data-tooltip="${technical}">${friendly}</th>`;
+
+      for (const [dateKey, runs] of dateGroups) {
+        let st = 'none';
+        let runUrl = '';
+        let details = [];
+        for (const run of runs) {
+          const t = run.tests.find(x => testKey(x) === key);
+          if (t) {
+            st = worstStatus(st, t.status);
+            runUrl = run.run_url || runUrl;
+            const lbl = run.label ? ` [${run.label}]` : '';
+            const ts = new Date(run.timestamp);
+            const timeStr = ts.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const msg = t.message ? ': ' + t.message.split('\n')[0].slice(0, 80) : '';
+            details.push(`${timeStr}${lbl} - ${t.status}${msg}`);
+          }
+        }
+        const td = document.createElement('td');
+        const tip = `${dateKey}\n${details.join('\n') || 'no data'}`;
+        td.innerHTML = `<a class="cell cell-${st}" href="${runUrl}" target="_blank" data-tooltip="${escHtml(tip)}">&nbsp;</a>`;
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
     }
-    tbody.appendChild(tr);
   }
   table.appendChild(tbody);
   container.appendChild(table);
