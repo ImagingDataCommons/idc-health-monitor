@@ -12,6 +12,16 @@ permissions:
 jobs:
   run-tests:
    runs-on: ubuntu-latest
+   strategy:
+     fail-fast: false
+     matrix:
+       include:
+         - account: default
+           secret_name: BQ_SERVICE_ACCOUNT
+           label: ""
+         - account: whitelisted
+           secret_name: GHC_WHITELISTED_SA
+           label: whitelisted
    steps:
     - uses: actions/checkout@v6
     - name: Set up python
@@ -27,7 +37,7 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v3
       with:
-        credentials_json: '${{ secrets.BQ_SERVICE_ACCOUNT}}'
+        credentials_json: '${{ secrets[matrix.secret_name] }}'
 
     - name: Run tests
       id: tests
@@ -36,36 +46,83 @@ jobs:
         PROJECT_ID: ${{ secrets.PROJECT_ID }}
       run: |
         set -o pipefail
-        python scripts/run_tests_json.py --output test_results.json 2>&1 | tee test_output.txt
+        label_flag=""
+        if [ -n "${{ matrix.label }}" ]; then
+          label_flag="--label ${{ matrix.label }}"
+        fi
+        python scripts/run_tests_json.py --output test_results.json $label_flag 2>&1 | tee test_output.txt
 
     - name: Add test results to summary
       if: always()
       run: |
-        echo '## Test Results' >> $GITHUB_STEP_SUMMARY
+        echo '## Test Results (${{ matrix.account }})' >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
         cat test_output.txt >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
 
-    - name: Update dashboard data
+    - name: Upload results artifact
       if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: results-${{ matrix.account }}
+        path: test_results.json
+
+    - name: Set test outcome
+      if: always()
+      id: outcome
+      run: echo "failed=${{ steps.tests.outcome == 'failure' }}" >> $GITHUB_OUTPUT
+
+  update-dashboard:
+    needs: run-tests
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Download all results
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Set up python
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.10"
+
+    - name: Update dashboard data
       run: |
         python -c "
-        import json
+        import json, glob
+
         with open('docs/data/results.json', 'r') as f:
             data = json.load(f)
-        with open('test_results.json', 'r') as f:
-            new_result = json.load(f)
-        data.append(new_result)
+
+        for path in sorted(glob.glob('artifacts/results-*/test_results.json')):
+            with open(path, 'r') as f:
+                new_result = json.load(f)
+            data.append(new_result)
+
         data = data[-90:]
+
         with open('docs/data/results.json', 'w') as f:
             json.dump(data, f, indent=2)
         "
+
+    - name: Add combined results to summary
+      run: |
+        echo '## Combined Results' >> $GITHUB_STEP_SUMMARY
+        for f in artifacts/results-*/test_results.json; do
+          account=$(basename $(dirname "$f") | sed 's/results-//')
+          echo "### $account" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          python -c "import json; d=json.load(open('$f')); print(f\"Label: {d.get('label','default')}\"); s=d['summary']; print(f\"{s['passed']} passed, {s['failed']} failed, {s['errors']} errors of {s['total']}\")" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        done
+
+    - name: Commit and push
+      run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git add docs/data/results.json
         git commit -m "Update test results [skip ci]" || echo "No changes to commit"
         git push
-
-    - name: Fail if tests failed
-      if: steps.tests.outcome == 'failure'
-      run: exit 1

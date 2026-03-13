@@ -112,9 +112,15 @@ const DISPLAY_NAMES = {
   'TestDICOMwebGHC.test_wado_retrieve_seg_frame': 'WADO SEG Frame (GHC)',
 };
 
+function testKey(t) {
+  const base = `${t.module}.${t.class}.${t.name}`;
+  return t.label ? `${base}:${t.label}` : base;
+}
+
 function displayName(t) {
   const classMethod = `${t.class}.${t.name}`;
-  return DISPLAY_NAMES[classMethod] || classMethod;
+  const base = DISPLAY_NAMES[classMethod] || classMethod;
+  return t.label ? `${base} [${t.label}]` : base;
 }
 
 async function init() {
@@ -134,11 +140,18 @@ async function init() {
 }
 
 function render(app, data) {
-  const latest = data[data.length - 1];
+  // Find the latest run per label to show combined banner
+  const latestByLabel = new Map();
+  for (const run of data) {
+    const lbl = run.label || '';
+    latestByLabel.set(lbl, run);
+  }
   const allTestKeys = getTestKeys(data);
 
   app.innerHTML = '';
-  app.appendChild(renderBanner(latest));
+  for (const [lbl, latest] of latestByLabel) {
+    app.appendChild(renderBanner(latest, lbl));
+  }
   app.appendChild(renderTestTable(data, allTestKeys));
 
   const h2 = document.createElement('h2');
@@ -153,14 +166,14 @@ function getTestKeys(data) {
   const seen = new Map();
   for (const run of data) {
     for (const t of run.tests) {
-      const key = `${t.module}.${t.class}.${t.name}`;
+      const key = testKey(t);
       if (!seen.has(key)) seen.set(key, t);
     }
   }
   return [...seen.entries()];
 }
 
-function renderBanner(latest) {
+function renderBanner(latest, label) {
   const s = latest.summary;
   const ok = s.failed === 0 && s.errors === 0;
   const div = document.createElement('div');
@@ -168,11 +181,12 @@ function renderBanner(latest) {
   const ts = new Date(latest.timestamp);
   const commit = latest.commit_sha ? latest.commit_sha.slice(0, 7) : '';
   const runLink = latest.run_url ? `<a href="${latest.run_url}" target="_blank">View run</a>` : '';
+  const labelTag = label ? ` [${label}]` : '';
 
   div.innerHTML = `
     <div class="banner-dot" style="background:${ok ? 'var(--pass)' : 'var(--fail)'}"></div>
     <div class="banner-text">
-      <strong>${ok ? 'All checks passing' : `${s.failed + s.errors} check(s) failing`}</strong>
+      <strong>${ok ? 'All checks passing' : `${s.failed + s.errors} check(s) failing`}${labelTag}</strong>
       &mdash; ${s.passed} passed, ${s.failed} failed${s.errors ? `, ${s.errors} errors` : ''}${s.skipped ? `, ${s.skipped} skipped` : ''} of ${s.total}
     </div>
     <div class="banner-meta">
@@ -183,9 +197,11 @@ function renderBanner(latest) {
 }
 
 function renderTestTable(data, allTestKeys) {
-  const latest = data[data.length - 1];
+  // Build a map from all latest runs (one per label)
   const latestMap = new Map();
-  for (const t of latest.tests) latestMap.set(`${t.module}.${t.class}.${t.name}`, t);
+  for (const run of data) {
+    for (const t of run.tests) latestMap.set(testKey(t), t);
+  }
 
   const table = document.createElement('table');
   table.className = 'tests-table';
@@ -206,7 +222,7 @@ function renderTestTable(data, allTestKeys) {
     const recent = data.slice(-30);
     let historyHtml = '<div class="history-bar">';
     for (const run of recent) {
-      const rt = run.tests.find(x => `${x.module}.${x.class}.${x.name}` === key);
+      const rt = run.tests.find(x => testKey(x) === key);
       const st = rt ? rt.status : 'none';
       const title = `${new Date(run.timestamp).toLocaleDateString()} - ${st}`;
       const url = run.run_url || '';
@@ -246,12 +262,12 @@ function renderHeatmap(data, allTestKeys) {
   for (const [key, sample] of allTestKeys) {
     const tr = document.createElement('tr');
     const friendly = displayName(sample);
-    const technical = `${sample.class}.${sample.name}`;
+    const technical = `${sample.class}.${sample.name}${sample.label ? ' [' + sample.label + ']' : ''}`;
     tr.innerHTML = `<th data-tooltip="${technical}">${friendly}</th>`;
 
     for (const run of data) {
       const testMap = new Map();
-      for (const t of run.tests) testMap.set(`${t.module}.${t.class}.${t.name}`, t);
+      for (const t of run.tests) testMap.set(testKey(t), t);
       const t = testMap.get(key);
       const st = t ? t.status : 'none';
       const td = document.createElement('td');

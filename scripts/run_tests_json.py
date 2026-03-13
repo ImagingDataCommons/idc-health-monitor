@@ -138,6 +138,7 @@ def build_run_metadata():
 def main():
     parser = argparse.ArgumentParser(description="Run tests and output JSON results")
     parser.add_argument("--output", required=True, help="Path to write JSON results")
+    parser.add_argument("--label", default=None, help="Label to tag test results (e.g., 'whitelisted')")
     args = parser.parse_args()
 
     # Load all test modules
@@ -162,8 +163,14 @@ def main():
     errors = len([t for t in result.test_results if t["status"] == "error"])
     skipped = len([t for t in result.test_results if t["status"] == "skip"])
 
+    # Tag each test result with the label
+    if args.label:
+        for t in result.test_results:
+            t["label"] = args.label
+
     output = {
         **build_run_metadata(),
+        "label": args.label,
         "summary": {
             "total": result.testsRun,
             "passed": passed,
