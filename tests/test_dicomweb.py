@@ -17,6 +17,27 @@ IDC_VERSION = "23"
 # Known StudyInstanceUID from TCGA (stable, public)
 KNOWN_STUDY_UID = "1.3.6.1.4.1.14519.5.2.1.6450.9002.307623500513044641407722230440"
 
+# SM instance for frame retrieval regression test (Case 63795270)
+# High-numbered frame fetch was failing with "one of the frame indexes is not valid"
+SM_FRAME_STUDY_UID = "1.2.826.0.1.3680043.8.498.41285422314130783242731156952699253473"
+SM_FRAME_SERIES_UID = "1.2.826.0.1.3680043.8.498.66309775612720640014052379381817887378"
+SM_FRAME_INSTANCE_UID = "1.2.826.0.1.3680043.8.498.13786005192541160658142740365978773162"
+SM_FRAME_NUMBER = "33412"
+
+# SM instance for transcoding regression test (Case 66908855)
+# Frame retrieval with transcoding Accept header fails; workaround is Accept: */*
+SM_TRANSCODE_STUDY_UID = "2.25.302737996345872783571112300080988167697"
+SM_TRANSCODE_SERIES_UID = "1.3.6.1.4.1.5962.99.1.1250863857.1162905243.1637633436401.2.0"
+SM_TRANSCODE_INSTANCE_UID = "1.3.6.1.4.1.5962.99.1.1250863857.1162905243.1637633436401.29.0"
+SM_TRANSCODE_FRAME_NUMBER = "56"
+
+# SEG instance for segmentation frame retrieval regression test (Case 66908855)
+# Single-bit segmentations fail with "BitsAllocated non-divisible by 8" when transcoding
+SEG_STUDY_UID = "2.25.248993378467861204438385724637135464855"
+SEG_SERIES_UID = "1.2.826.0.1.3680043.10.511.3.24961123847878421867357977308384691"
+SEG_INSTANCE_UID = "1.2.826.0.1.3680043.10.511.3.93572833693803919744901431204780845"
+SEG_FRAME_NUMBER = "1"
+
 DICOM_JSON_HEADERS = {"Accept": "application/dicom+json"}
 
 
@@ -112,6 +133,40 @@ class TestDICOMwebProxy(unittest.TestCase):
         self.assertGreater(len(metadata), 0)
 
 
+    def test_wado_retrieve_sm_frame(self):
+        """WADO-RS: retrieve a high-numbered frame from an SM instance (Case 63795270 regression)."""
+        print("Testing WADO-RS SM frame retrieval (proxy)")
+        resp = requests.get(
+            f"{self.base_url}/studies/{SM_FRAME_STUDY_UID}/series/{SM_FRAME_SERIES_UID}"
+            f"/instances/{SM_FRAME_INSTANCE_UID}/frames/{SM_FRAME_NUMBER}",
+            headers={"Accept": "*/*"},
+        )
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:500]}")
+        self.assertGreater(len(resp.content), 0, "Frame response body is empty")
+
+    def test_wado_retrieve_sm_frame_native(self):
+        """WADO-RS: retrieve an SM frame in native transfer syntax (Case 66908855 regression)."""
+        print("Testing WADO-RS SM frame native transfer syntax (proxy)")
+        resp = requests.get(
+            f"{self.base_url}/studies/{SM_TRANSCODE_STUDY_UID}/series/{SM_TRANSCODE_SERIES_UID}"
+            f"/instances/{SM_TRANSCODE_INSTANCE_UID}/frames/{SM_TRANSCODE_FRAME_NUMBER}",
+            headers={"Accept": 'multipart/related; type="application/octet-stream"; transfer-syntax=*'},
+        )
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:500]}")
+        self.assertGreater(len(resp.content), 0, "Frame response body is empty")
+
+    def test_wado_retrieve_seg_frame(self):
+        """WADO-RS: retrieve a frame from a segmentation instance (Case 66908855 regression)."""
+        print("Testing WADO-RS SEG frame retrieval (proxy)")
+        resp = requests.get(
+            f"{self.base_url}/studies/{SEG_STUDY_UID}/series/{SEG_SERIES_UID}"
+            f"/instances/{SEG_INSTANCE_UID}/frames/{SEG_FRAME_NUMBER}",
+            headers={"Accept": 'multipart/related; type="application/octet-stream"; transfer-syntax=*'},
+        )
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:500]}")
+        self.assertGreater(len(resp.content), 0, "Frame response body is empty")
+
+
 class TestDICOMwebGHC(unittest.TestCase):
     """Test DICOMweb endpoints via Google Healthcare API (authenticated)."""
 
@@ -145,6 +200,40 @@ class TestDICOMwebGHC(unittest.TestCase):
         series = resp.json()
         self.assertIsInstance(series, list)
         self.assertGreater(len(series), 0)
+
+
+    def test_wado_retrieve_sm_frame(self):
+        """WADO-RS: retrieve a high-numbered frame from an SM instance (Case 63795270 regression, GHC)."""
+        print("Testing WADO-RS SM frame retrieval (GHC)")
+        resp = requests.get(
+            f"{self.base_url}/studies/{SM_FRAME_STUDY_UID}/series/{SM_FRAME_SERIES_UID}"
+            f"/instances/{SM_FRAME_INSTANCE_UID}/frames/{SM_FRAME_NUMBER}",
+            headers={**self.headers, "Accept": "*/*"},
+        )
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:500]}")
+        self.assertGreater(len(resp.content), 0, "Frame response body is empty")
+
+    def test_wado_retrieve_sm_frame_native(self):
+        """WADO-RS: retrieve an SM frame in native transfer syntax (Case 66908855 regression, GHC)."""
+        print("Testing WADO-RS SM frame native transfer syntax (GHC)")
+        resp = requests.get(
+            f"{self.base_url}/studies/{SM_TRANSCODE_STUDY_UID}/series/{SM_TRANSCODE_SERIES_UID}"
+            f"/instances/{SM_TRANSCODE_INSTANCE_UID}/frames/{SM_TRANSCODE_FRAME_NUMBER}",
+            headers={**self.headers, "Accept": 'multipart/related; type="application/octet-stream"; transfer-syntax=*'},
+        )
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:500]}")
+        self.assertGreater(len(resp.content), 0, "Frame response body is empty")
+
+    def test_wado_retrieve_seg_frame(self):
+        """WADO-RS: retrieve a frame from a segmentation instance (Case 66908855 regression, GHC)."""
+        print("Testing WADO-RS SEG frame retrieval (GHC)")
+        resp = requests.get(
+            f"{self.base_url}/studies/{SEG_STUDY_UID}/series/{SEG_SERIES_UID}"
+            f"/instances/{SEG_INSTANCE_UID}/frames/{SEG_FRAME_NUMBER}",
+            headers={**self.headers, "Accept": 'multipart/related; type="application/octet-stream"; transfer-syntax=*'},
+        )
+        self.assertEqual(resp.status_code, 200, f"Expected 200, got {resp.status_code}: {resp.text[:500]}")
+        self.assertGreater(len(resp.content), 0, "Frame response body is empty")
 
 
 if __name__ == "__main__":
