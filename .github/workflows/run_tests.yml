@@ -19,9 +19,11 @@ jobs:
          - account: default
            secret_name: BQ_SERVICE_ACCOUNT
            label: ""
+           test_filter: ""
          - account: whitelisted
            secret_name: GHC_WHITELISTED_SA
            label: whitelisted
+           test_filter: tests.test_dicomweb.TestDICOMwebGHC
    steps:
     - uses: actions/checkout@v6
     - name: Set up python
@@ -50,7 +52,7 @@ jobs:
         if [ -n "${{ matrix.label }}" ]; then
           label_flag="--label ${{ matrix.label }}"
         fi
-        python scripts/run_tests_json.py --output test_results.json $label_flag 2>&1 | tee test_output.txt
+        python scripts/run_tests_json.py --output test_results.json $label_flag ${{ matrix.test_filter }} 2>&1 | tee test_output.txt
 
     - name: Add test results to summary
       if: always()

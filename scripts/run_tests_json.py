@@ -139,19 +139,21 @@ def main():
     parser = argparse.ArgumentParser(description="Run tests and output JSON results")
     parser.add_argument("--output", required=True, help="Path to write JSON results")
     parser.add_argument("--label", default=None, help="Label to tag test results (e.g., 'whitelisted')")
+    parser.add_argument("tests", nargs="*", help="Specific test names to run (e.g., tests.test_dicomweb.TestDICOMwebGHC). Runs all if omitted.")
     args = parser.parse_args()
 
-    # Load all test modules
+    # Load tests
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
-
-    # Import and load test modules
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    import tests.idc_tests
-    import tests.test_dicomweb
 
-    suite.addTests(loader.loadTestsFromModule(tests.idc_tests))
-    suite.addTests(loader.loadTestsFromModule(tests.test_dicomweb))
+    if args.tests:
+        suite.addTests(loader.loadTestsFromNames(args.tests))
+    else:
+        import tests.idc_tests
+        import tests.test_dicomweb
+        suite.addTests(loader.loadTestsFromModule(tests.idc_tests))
+        suite.addTests(loader.loadTestsFromModule(tests.test_dicomweb))
 
     # Run tests
     runner = JSONTestRunner(stream=sys.stderr, verbosity=2)
