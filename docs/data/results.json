@@ -1564,5 +1564,231 @@
         "label": "whitelisted"
       }
     ]
+  },
+  {
+    "timestamp": "2026-03-13T21:27:12.992421+00:00",
+    "commit_sha": "b50b2dc42be570822cc1a140b73ef1914e33b783",
+    "run_id": 23071186949,
+    "run_url": "https://github.com/ImagingDataCommons/idc-health-monitor/actions/runs/23071186949",
+    "label": null,
+    "summary": {
+      "total": 16,
+      "passed": 11,
+      "failed": 5,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tests": [
+      {
+        "name": "test_bq_queries",
+        "class": "TestIDCServices",
+        "module": "tests.idc_tests",
+        "description": "BigQuery: verify idc_current.dicom_all table is accessible.",
+        "status": "pass",
+        "duration_s": 1.214,
+        "message": null
+      },
+      {
+        "name": "test_dev_api",
+        "class": "TestIDCServices",
+        "module": "tests.idc_tests",
+        "description": "IDC API: development /collections endpoint returns 200.",
+        "status": "pass",
+        "duration_s": 0.24,
+        "message": null
+      },
+      {
+        "name": "test_is_portal_live",
+        "class": "TestIDCServices",
+        "module": "tests.idc_tests",
+        "description": "Portal: verify IDC portal URLs are reachable.",
+        "status": "pass",
+        "duration_s": 0.238,
+        "message": null
+      },
+      {
+        "name": "test_prod_api",
+        "class": "TestIDCServices",
+        "module": "tests.idc_tests",
+        "description": "IDC API: production /collections endpoint returns 200.",
+        "status": "pass",
+        "duration_s": 0.118,
+        "message": null
+      },
+      {
+        "name": "test_qido_search_series",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "QIDO-RS: search for series within a known study (GHC).",
+        "status": "fail",
+        "duration_s": 0.356,
+        "message": "Traceback (most recent call last):\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 59, in testPartExecutor\n    yield\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 591, in run\n    self._callTestMethod(testMethod)\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 549, in _callTestMethod\n    method()\n  File \"/home/runner/work/idc-health-monitor/idc-health-monitor/tests/test_dicomweb.py\", line 199, in test_qido_search_series\n    self.assertEqual(resp.status_code, 200, f\"Expected 200, got {resp.status_code}: {resp.text}\")\nAssertionError: 403 != 200 : Expected 200, got 403: [{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Permission healthcare.dicomStores.dicomWebRead denied on resource projects/nci-idc-data/locations/us-central1/datasets/idc/dicomStores/idc-store-v23 (or it may be malformed or not exist)\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n]\n"
+      },
+      {
+        "name": "test_qido_search_studies",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "QIDO-RS: search for studies returns results (GHC).",
+        "status": "fail",
+        "duration_s": 0.483,
+        "message": "Traceback (most recent call last):\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 59, in testPartExecutor\n    yield\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 591, in run\n    self._callTestMethod(testMethod)\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 549, in _callTestMethod\n    method()\n  File \"/home/runner/work/idc-health-monitor/idc-health-monitor/tests/test_dicomweb.py\", line 187, in test_qido_search_studies\n    self.assertEqual(resp.status_code, 200, f\"Expected 200, got {resp.status_code}: {resp.text}\")\nAssertionError: 403 != 200 : Expected 200, got 403: [{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Permission healthcare.dicomStores.dicomWebRead denied on resource projects/nci-idc-data/locations/us-central1/datasets/idc/dicomStores/idc-store-v23 (or it may be malformed or not exist)\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n]\n"
+      },
+      {
+        "name": "test_wado_retrieve_seg_frame",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve a frame from a segmentation instance (Case 66908855 regression, GHC).",
+        "status": "fail",
+        "duration_s": 0.438,
+        "message": "Traceback (most recent call last):\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 59, in testPartExecutor\n    yield\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 591, in run\n    self._callTestMethod(testMethod)\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 549, in _callTestMethod\n    method()\n  File \"/home/runner/work/idc-health-monitor/idc-health-monitor/tests/test_dicomweb.py\", line 235, in test_wado_retrieve_seg_frame\n    self.assertEqual(resp.status_code, 200, f\"Expected 200, got {resp.status_code}: {resp.text[:500]}\")\nAssertionError: 403 != 200 : Expected 200, got 403: [{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Permission healthcare.dicomStores.dicomWebRead denied on resource projects/nci-idc-data/locations/us-central1/datasets/idc/dicomStores/idc-store-v23 (or it may be malformed or not exist)\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n]\n"
+      },
+      {
+        "name": "test_wado_retrieve_sm_frame",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve a high-numbered frame from an SM instance (Case 63795270 regression, GHC).",
+        "status": "fail",
+        "duration_s": 0.446,
+        "message": "Traceback (most recent call last):\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 59, in testPartExecutor\n    yield\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 591, in run\n    self._callTestMethod(testMethod)\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 549, in _callTestMethod\n    method()\n  File \"/home/runner/work/idc-health-monitor/idc-health-monitor/tests/test_dicomweb.py\", line 213, in test_wado_retrieve_sm_frame\n    self.assertEqual(resp.status_code, 200, f\"Expected 200, got {resp.status_code}: {resp.text[:500]}\")\nAssertionError: 403 != 200 : Expected 200, got 403: [{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Permission healthcare.dicomStores.dicomWebRead denied on resource projects/nci-idc-data/locations/us-central1/datasets/idc/dicomStores/idc-store-v23 (or it may be malformed or not exist)\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n]\n"
+      },
+      {
+        "name": "test_wado_retrieve_sm_frame_native",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve an SM frame in native transfer syntax (Case 66908855 regression, GHC).",
+        "status": "fail",
+        "duration_s": 0.439,
+        "message": "Traceback (most recent call last):\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 59, in testPartExecutor\n    yield\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 591, in run\n    self._callTestMethod(testMethod)\n  File \"/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/unittest/case.py\", line 549, in _callTestMethod\n    method()\n  File \"/home/runner/work/idc-health-monitor/idc-health-monitor/tests/test_dicomweb.py\", line 224, in test_wado_retrieve_sm_frame_native\n    self.assertEqual(resp.status_code, 200, f\"Expected 200, got {resp.status_code}: {resp.text[:500]}\")\nAssertionError: 403 != 200 : Expected 200, got 403: [{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Permission healthcare.dicomStores.dicomWebRead denied on resource projects/nci-idc-data/locations/us-central1/datasets/idc/dicomStores/idc-store-v23 (or it may be malformed or not exist)\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n]\n"
+      },
+      {
+        "name": "test_qido_search_instances",
+        "class": "TestDICOMwebProxy",
+        "module": "tests.test_dicomweb",
+        "description": "QIDO-RS: search for instances within a known series.",
+        "status": "pass",
+        "duration_s": 0.467,
+        "message": null
+      },
+      {
+        "name": "test_qido_search_series",
+        "class": "TestDICOMwebProxy",
+        "module": "tests.test_dicomweb",
+        "description": "QIDO-RS: search for series within a known study.",
+        "status": "pass",
+        "duration_s": 0.307,
+        "message": null
+      },
+      {
+        "name": "test_qido_search_studies",
+        "class": "TestDICOMwebProxy",
+        "module": "tests.test_dicomweb",
+        "description": "QIDO-RS: search for studies returns results.",
+        "status": "pass",
+        "duration_s": 0.433,
+        "message": null
+      },
+      {
+        "name": "test_wado_retrieve_instance_metadata",
+        "class": "TestDICOMwebProxy",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve metadata for a specific instance.",
+        "status": "pass",
+        "duration_s": 0.29,
+        "message": null
+      },
+      {
+        "name": "test_wado_retrieve_seg_frame",
+        "class": "TestDICOMwebProxy",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve a frame from a segmentation instance (Case 66908855 regression).",
+        "status": "pass",
+        "duration_s": 1.461,
+        "message": null
+      },
+      {
+        "name": "test_wado_retrieve_sm_frame",
+        "class": "TestDICOMwebProxy",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve a high-numbered frame from an SM instance (Case 63795270 regression).",
+        "status": "pass",
+        "duration_s": 0.945,
+        "message": null
+      },
+      {
+        "name": "test_wado_retrieve_sm_frame_native",
+        "class": "TestDICOMwebProxy",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve an SM frame in native transfer syntax (Case 66908855 regression).",
+        "status": "pass",
+        "duration_s": 0.29,
+        "message": null
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-03-13T21:27:08.509778+00:00",
+    "commit_sha": "b50b2dc42be570822cc1a140b73ef1914e33b783",
+    "run_id": 23071186949,
+    "run_url": "https://github.com/ImagingDataCommons/idc-health-monitor/actions/runs/23071186949",
+    "label": "whitelisted",
+    "summary": {
+      "total": 5,
+      "passed": 0,
+      "failed": 5,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tests": [
+      {
+        "name": "test_qido_search_series",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "QIDO-RS: search for series within a known study (GHC).",
+        "status": "fail",
+        "duration_s": 0.658,
+        "message": "Traceback (most recent call last):\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 59, in testPartExecutor\n    yield\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 591, in run\n    self._callTestMethod(testMethod)\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 549, in _callTestMethod\n    method()\n  File \"/home/runner/work/idc-health-monitor/idc-health-monitor/tests/test_dicomweb.py\", line 199, in test_qido_search_series\n    self.assertEqual(resp.status_code, 200, f\"Expected 200, got {resp.status_code}: {resp.text}\")\nAssertionError: 403 != 200 : Expected 200, got 403: [{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Permission healthcare.dicomStores.dicomWebRead denied on resource projects/nci-idc-data/locations/us-central1/datasets/idc/dicomStores/idc-store-v23 (or it may be malformed or not exist)\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n]\n",
+        "label": "whitelisted"
+      },
+      {
+        "name": "test_qido_search_studies",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "QIDO-RS: search for studies returns results (GHC).",
+        "status": "fail",
+        "duration_s": 0.541,
+        "message": "Traceback (most recent call last):\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 59, in testPartExecutor\n    yield\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 591, in run\n    self._callTestMethod(testMethod)\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 549, in _callTestMethod\n    method()\n  File \"/home/runner/work/idc-health-monitor/idc-health-monitor/tests/test_dicomweb.py\", line 187, in test_qido_search_studies\n    self.assertEqual(resp.status_code, 200, f\"Expected 200, got {resp.status_code}: {resp.text}\")\nAssertionError: 403 != 200 : Expected 200, got 403: [{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Permission healthcare.dicomStores.dicomWebRead denied on resource projects/nci-idc-data/locations/us-central1/datasets/idc/dicomStores/idc-store-v23 (or it may be malformed or not exist)\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n]\n",
+        "label": "whitelisted"
+      },
+      {
+        "name": "test_wado_retrieve_seg_frame",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve a frame from a segmentation instance (Case 66908855 regression, GHC).",
+        "status": "fail",
+        "duration_s": 0.508,
+        "message": "Traceback (most recent call last):\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 59, in testPartExecutor\n    yield\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 591, in run\n    self._callTestMethod(testMethod)\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 549, in _callTestMethod\n    method()\n  File \"/home/runner/work/idc-health-monitor/idc-health-monitor/tests/test_dicomweb.py\", line 235, in test_wado_retrieve_seg_frame\n    self.assertEqual(resp.status_code, 200, f\"Expected 200, got {resp.status_code}: {resp.text[:500]}\")\nAssertionError: 403 != 200 : Expected 200, got 403: [{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Permission healthcare.dicomStores.dicomWebRead denied on resource projects/nci-idc-data/locations/us-central1/datasets/idc/dicomStores/idc-store-v23 (or it may be malformed or not exist)\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n]\n",
+        "label": "whitelisted"
+      },
+      {
+        "name": "test_wado_retrieve_sm_frame",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve a high-numbered frame from an SM instance (Case 63795270 regression, GHC).",
+        "status": "fail",
+        "duration_s": 0.565,
+        "message": "Traceback (most recent call last):\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 59, in testPartExecutor\n    yield\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 591, in run\n    self._callTestMethod(testMethod)\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 549, in _callTestMethod\n    method()\n  File \"/home/runner/work/idc-health-monitor/idc-health-monitor/tests/test_dicomweb.py\", line 213, in test_wado_retrieve_sm_frame\n    self.assertEqual(resp.status_code, 200, f\"Expected 200, got {resp.status_code}: {resp.text[:500]}\")\nAssertionError: 403 != 200 : Expected 200, got 403: [{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Permission healthcare.dicomStores.dicomWebRead denied on resource projects/nci-idc-data/locations/us-central1/datasets/idc/dicomStores/idc-store-v23 (or it may be malformed or not exist)\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n]\n",
+        "label": "whitelisted"
+      },
+      {
+        "name": "test_wado_retrieve_sm_frame_native",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve an SM frame in native transfer syntax (Case 66908855 regression, GHC).",
+        "status": "fail",
+        "duration_s": 0.528,
+        "message": "Traceback (most recent call last):\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 59, in testPartExecutor\n    yield\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 591, in run\n    self._callTestMethod(testMethod)\n  File \"/opt/hostedtoolcache/Python/3.10.19/x64/lib/python3.10/unittest/case.py\", line 549, in _callTestMethod\n    method()\n  File \"/home/runner/work/idc-health-monitor/idc-health-monitor/tests/test_dicomweb.py\", line 224, in test_wado_retrieve_sm_frame_native\n    self.assertEqual(resp.status_code, 200, f\"Expected 200, got {resp.status_code}: {resp.text[:500]}\")\nAssertionError: 403 != 200 : Expected 200, got 403: [{\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Permission healthcare.dicomStores.dicomWebRead denied on resource projects/nci-idc-data/locations/us-central1/datasets/idc/dicomStores/idc-store-v23 (or it may be malformed or not exist)\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n]\n",
+        "label": "whitelisted"
+      }
+    ]
   }
 ]
