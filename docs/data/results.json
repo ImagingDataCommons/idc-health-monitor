@@ -1,249 +1,5 @@
 [
   {
-    "timestamp": "2026-05-12T08:19:51.746591+00:00",
-    "commit_sha": "8aba33b53ecff1568100af537f43f9c545200456",
-    "run_id": 25722378506,
-    "run_url": "https://github.com/ImagingDataCommons/idc-health-monitor/actions/runs/25722378506",
-    "label": null,
-    "summary": {
-      "total": 18,
-      "passed": 18,
-      "failed": 0,
-      "errors": 0,
-      "skipped": 0
-    },
-    "tests": [
-      {
-        "name": "test_bq_queries",
-        "class": "TestIDCServices",
-        "module": "tests.idc_tests",
-        "description": "BigQuery: verify idc_current.dicom_all table is accessible.",
-        "status": "pass",
-        "duration_s": 1.679,
-        "message": null
-      },
-      {
-        "name": "test_dev_api",
-        "class": "TestIDCServices",
-        "module": "tests.idc_tests",
-        "description": "IDC API: development /collections endpoint returns 200.",
-        "status": "pass",
-        "duration_s": 0.391,
-        "message": null
-      },
-      {
-        "name": "test_is_portal_live",
-        "class": "TestIDCServices",
-        "module": "tests.idc_tests",
-        "description": "Portal: verify IDC portal URLs are reachable.",
-        "status": "pass",
-        "duration_s": 0.459,
-        "message": null
-      },
-      {
-        "name": "test_j2k_ghc_accept_headers",
-        "class": "TestIDCServices",
-        "module": "tests.idc_tests",
-        "description": "DICOMweb frame retrieval via GHC v23 \u2014 authenticates via Application Default Credentials.",
-        "status": "pass",
-        "duration_s": 9.6,
-        "message": null
-      },
-      {
-        "name": "test_j2k_proxy_accept_headers",
-        "class": "TestIDCServices",
-        "module": "tests.idc_tests",
-        "description": "DICOMweb frame retrieval via IDC Proxy \u2014 no auth required.",
-        "status": "pass",
-        "duration_s": 7.563,
-        "message": null
-      },
-      {
-        "name": "test_prod_api",
-        "class": "TestIDCServices",
-        "module": "tests.idc_tests",
-        "description": "IDC API: production /collections endpoint returns 200.",
-        "status": "pass",
-        "duration_s": 0.512,
-        "message": null
-      },
-      {
-        "name": "test_qido_search_series",
-        "class": "TestDICOMwebGHC",
-        "module": "tests.test_dicomweb",
-        "description": "QIDO-RS: search for series within a known study (GHC).",
-        "status": "pass",
-        "duration_s": 0.333,
-        "message": null
-      },
-      {
-        "name": "test_qido_search_studies",
-        "class": "TestDICOMwebGHC",
-        "module": "tests.test_dicomweb",
-        "description": "QIDO-RS: search for studies returns results (GHC).",
-        "status": "pass",
-        "duration_s": 0.299,
-        "message": null
-      },
-      {
-        "name": "test_wado_retrieve_seg_frame",
-        "class": "TestDICOMwebGHC",
-        "module": "tests.test_dicomweb",
-        "description": "WADO-RS: retrieve a frame from a segmentation instance (Case 66908855 regression, GHC).",
-        "status": "pass",
-        "duration_s": 0.482,
-        "message": null
-      },
-      {
-        "name": "test_wado_retrieve_sm_frame",
-        "class": "TestDICOMwebGHC",
-        "module": "tests.test_dicomweb",
-        "description": "WADO-RS: retrieve a high-numbered frame from an SM instance (Case 63795270 regression, GHC).",
-        "status": "pass",
-        "duration_s": 1.24,
-        "message": null
-      },
-      {
-        "name": "test_wado_retrieve_sm_frame_native",
-        "class": "TestDICOMwebGHC",
-        "module": "tests.test_dicomweb",
-        "description": "WADO-RS: retrieve an SM frame in native transfer syntax (Case 66908855 regression, GHC).",
-        "status": "pass",
-        "duration_s": 0.448,
-        "message": null
-      },
-      {
-        "name": "test_qido_search_instances",
-        "class": "TestDICOMwebProxy",
-        "module": "tests.test_dicomweb",
-        "description": "QIDO-RS: search for instances within a known series.",
-        "status": "pass",
-        "duration_s": 0.529,
-        "message": null
-      },
-      {
-        "name": "test_qido_search_series",
-        "class": "TestDICOMwebProxy",
-        "module": "tests.test_dicomweb",
-        "description": "QIDO-RS: search for series within a known study.",
-        "status": "pass",
-        "duration_s": 0.427,
-        "message": null
-      },
-      {
-        "name": "test_qido_search_studies",
-        "class": "TestDICOMwebProxy",
-        "module": "tests.test_dicomweb",
-        "description": "QIDO-RS: search for studies returns results.",
-        "status": "pass",
-        "duration_s": 0.502,
-        "message": null
-      },
-      {
-        "name": "test_wado_retrieve_instance_metadata",
-        "class": "TestDICOMwebProxy",
-        "module": "tests.test_dicomweb",
-        "description": "WADO-RS: retrieve metadata for a specific instance.",
-        "status": "pass",
-        "duration_s": 0.23,
-        "message": null
-      },
-      {
-        "name": "test_wado_retrieve_seg_frame",
-        "class": "TestDICOMwebProxy",
-        "module": "tests.test_dicomweb",
-        "description": "WADO-RS: retrieve a frame from a segmentation instance (Case 66908855 regression).",
-        "status": "pass",
-        "duration_s": 0.569,
-        "message": null
-      },
-      {
-        "name": "test_wado_retrieve_sm_frame",
-        "class": "TestDICOMwebProxy",
-        "module": "tests.test_dicomweb",
-        "description": "WADO-RS: retrieve a high-numbered frame from an SM instance (Case 63795270 regression).",
-        "status": "pass",
-        "duration_s": 1.243,
-        "message": null
-      },
-      {
-        "name": "test_wado_retrieve_sm_frame_native",
-        "class": "TestDICOMwebProxy",
-        "module": "tests.test_dicomweb",
-        "description": "WADO-RS: retrieve an SM frame in native transfer syntax (Case 66908855 regression).",
-        "status": "pass",
-        "duration_s": 0.358,
-        "message": null
-      }
-    ]
-  },
-  {
-    "timestamp": "2026-05-12T08:19:24.231397+00:00",
-    "commit_sha": "8aba33b53ecff1568100af537f43f9c545200456",
-    "run_id": 25722378506,
-    "run_url": "https://github.com/ImagingDataCommons/idc-health-monitor/actions/runs/25722378506",
-    "label": "whitelisted",
-    "summary": {
-      "total": 5,
-      "passed": 5,
-      "failed": 0,
-      "errors": 0,
-      "skipped": 0
-    },
-    "tests": [
-      {
-        "name": "test_qido_search_series",
-        "class": "TestDICOMwebGHC",
-        "module": "tests.test_dicomweb",
-        "description": "QIDO-RS: search for series within a known study (GHC).",
-        "status": "pass",
-        "duration_s": 0.512,
-        "message": null,
-        "label": "whitelisted"
-      },
-      {
-        "name": "test_qido_search_studies",
-        "class": "TestDICOMwebGHC",
-        "module": "tests.test_dicomweb",
-        "description": "QIDO-RS: search for studies returns results (GHC).",
-        "status": "pass",
-        "duration_s": 0.374,
-        "message": null,
-        "label": "whitelisted"
-      },
-      {
-        "name": "test_wado_retrieve_seg_frame",
-        "class": "TestDICOMwebGHC",
-        "module": "tests.test_dicomweb",
-        "description": "WADO-RS: retrieve a frame from a segmentation instance (Case 66908855 regression, GHC).",
-        "status": "pass",
-        "duration_s": 0.722,
-        "message": null,
-        "label": "whitelisted"
-      },
-      {
-        "name": "test_wado_retrieve_sm_frame",
-        "class": "TestDICOMwebGHC",
-        "module": "tests.test_dicomweb",
-        "description": "WADO-RS: retrieve a high-numbered frame from an SM instance (Case 63795270 regression, GHC).",
-        "status": "pass",
-        "duration_s": 1.271,
-        "message": null,
-        "label": "whitelisted"
-      },
-      {
-        "name": "test_wado_retrieve_sm_frame_native",
-        "class": "TestDICOMwebGHC",
-        "module": "tests.test_dicomweb",
-        "description": "WADO-RS: retrieve an SM frame in native transfer syntax (Case 66908855 regression, GHC).",
-        "status": "pass",
-        "duration_s": 0.708,
-        "message": null,
-        "label": "whitelisted"
-      }
-    ]
-  },
-  {
     "timestamp": "2026-05-13T08:25:15.537199+00:00",
     "commit_sha": "b4ad9a56f010e201d37089dcdb9f98a66bb29c10",
     "run_id": 25787449444,
@@ -10974,6 +10730,250 @@
         "description": "WADO-RS: retrieve an SM frame in native transfer syntax (Case 66908855 regression, GHC).",
         "status": "pass",
         "duration_s": 0.359,
+        "message": null,
+        "label": "whitelisted"
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-06-26T08:36:50.969324+00:00",
+    "commit_sha": "219d9e6644199b96abf9894266bd2d2c2587b6d9",
+    "run_id": 28226994575,
+    "run_url": "https://github.com/ImagingDataCommons/idc-health-monitor/actions/runs/28226994575",
+    "label": null,
+    "summary": {
+      "total": 18,
+      "passed": 18,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tests": [
+      {
+        "name": "test_bq_queries",
+        "class": "TestIDCServices",
+        "module": "tests.idc_tests",
+        "description": "BigQuery: verify idc_current.dicom_all table is accessible.",
+        "status": "pass",
+        "duration_s": 1.72,
+        "message": null
+      },
+      {
+        "name": "test_dev_api",
+        "class": "TestIDCServices",
+        "module": "tests.idc_tests",
+        "description": "IDC API: development /collections endpoint returns 200.",
+        "status": "pass",
+        "duration_s": 0.411,
+        "message": null
+      },
+      {
+        "name": "test_is_portal_live",
+        "class": "TestIDCServices",
+        "module": "tests.idc_tests",
+        "description": "Portal: verify IDC portal URLs are reachable.",
+        "status": "pass",
+        "duration_s": 0.216,
+        "message": null
+      },
+      {
+        "name": "test_j2k_ghc_accept_headers",
+        "class": "TestIDCServices",
+        "module": "tests.idc_tests",
+        "description": "DICOMweb frame retrieval via GHC v23 \u2014 authenticates via Application Default Credentials.",
+        "status": "pass",
+        "duration_s": 8.409,
+        "message": null
+      },
+      {
+        "name": "test_j2k_proxy_accept_headers",
+        "class": "TestIDCServices",
+        "module": "tests.idc_tests",
+        "description": "DICOMweb frame retrieval via IDC Proxy \u2014 no auth required.",
+        "status": "pass",
+        "duration_s": 5.945,
+        "message": null
+      },
+      {
+        "name": "test_prod_api",
+        "class": "TestIDCServices",
+        "module": "tests.idc_tests",
+        "description": "IDC API: production /collections endpoint returns 200.",
+        "status": "pass",
+        "duration_s": 0.584,
+        "message": null
+      },
+      {
+        "name": "test_qido_search_series",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "QIDO-RS: search for series within a known study (GHC).",
+        "status": "pass",
+        "duration_s": 0.448,
+        "message": null
+      },
+      {
+        "name": "test_qido_search_studies",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "QIDO-RS: search for studies returns results (GHC).",
+        "status": "pass",
+        "duration_s": 0.203,
+        "message": null
+      },
+      {
+        "name": "test_wado_retrieve_seg_frame",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve a frame from a segmentation instance (Case 66908855 regression, GHC).",
+        "status": "pass",
+        "duration_s": 0.404,
+        "message": null
+      },
+      {
+        "name": "test_wado_retrieve_sm_frame",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve a high-numbered frame from an SM instance (Case 63795270 regression, GHC).",
+        "status": "pass",
+        "duration_s": 1.097,
+        "message": null
+      },
+      {
+        "name": "test_wado_retrieve_sm_frame_native",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve an SM frame in native transfer syntax (Case 66908855 regression, GHC).",
+        "status": "pass",
+        "duration_s": 0.401,
+        "message": null
+      },
+      {
+        "name": "test_qido_search_instances",
+        "class": "TestDICOMwebProxy",
+        "module": "tests.test_dicomweb",
+        "description": "QIDO-RS: search for instances within a known series.",
+        "status": "pass",
+        "duration_s": 0.307,
+        "message": null
+      },
+      {
+        "name": "test_qido_search_series",
+        "class": "TestDICOMwebProxy",
+        "module": "tests.test_dicomweb",
+        "description": "QIDO-RS: search for series within a known study.",
+        "status": "pass",
+        "duration_s": 0.341,
+        "message": null
+      },
+      {
+        "name": "test_qido_search_studies",
+        "class": "TestDICOMwebProxy",
+        "module": "tests.test_dicomweb",
+        "description": "QIDO-RS: search for studies returns results.",
+        "status": "pass",
+        "duration_s": 0.306,
+        "message": null
+      },
+      {
+        "name": "test_wado_retrieve_instance_metadata",
+        "class": "TestDICOMwebProxy",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve metadata for a specific instance.",
+        "status": "pass",
+        "duration_s": 0.272,
+        "message": null
+      },
+      {
+        "name": "test_wado_retrieve_seg_frame",
+        "class": "TestDICOMwebProxy",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve a frame from a segmentation instance (Case 66908855 regression).",
+        "status": "pass",
+        "duration_s": 0.482,
+        "message": null
+      },
+      {
+        "name": "test_wado_retrieve_sm_frame",
+        "class": "TestDICOMwebProxy",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve a high-numbered frame from an SM instance (Case 63795270 regression).",
+        "status": "pass",
+        "duration_s": 1.055,
+        "message": null
+      },
+      {
+        "name": "test_wado_retrieve_sm_frame_native",
+        "class": "TestDICOMwebProxy",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve an SM frame in native transfer syntax (Case 66908855 regression).",
+        "status": "pass",
+        "duration_s": 0.264,
+        "message": null
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-06-26T08:36:30.233968+00:00",
+    "commit_sha": "219d9e6644199b96abf9894266bd2d2c2587b6d9",
+    "run_id": 28226994575,
+    "run_url": "https://github.com/ImagingDataCommons/idc-health-monitor/actions/runs/28226994575",
+    "label": "whitelisted",
+    "summary": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tests": [
+      {
+        "name": "test_qido_search_series",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "QIDO-RS: search for series within a known study (GHC).",
+        "status": "pass",
+        "duration_s": 0.68,
+        "message": null,
+        "label": "whitelisted"
+      },
+      {
+        "name": "test_qido_search_studies",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "QIDO-RS: search for studies returns results (GHC).",
+        "status": "pass",
+        "duration_s": 0.474,
+        "message": null,
+        "label": "whitelisted"
+      },
+      {
+        "name": "test_wado_retrieve_seg_frame",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve a frame from a segmentation instance (Case 66908855 regression, GHC).",
+        "status": "pass",
+        "duration_s": 0.882,
+        "message": null,
+        "label": "whitelisted"
+      },
+      {
+        "name": "test_wado_retrieve_sm_frame",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve a high-numbered frame from an SM instance (Case 63795270 regression, GHC).",
+        "status": "pass",
+        "duration_s": 1.409,
+        "message": null,
+        "label": "whitelisted"
+      },
+      {
+        "name": "test_wado_retrieve_sm_frame_native",
+        "class": "TestDICOMwebGHC",
+        "module": "tests.test_dicomweb",
+        "description": "WADO-RS: retrieve an SM frame in native transfer syntax (Case 66908855 regression, GHC).",
+        "status": "pass",
+        "duration_s": 0.618,
         "message": null,
         "label": "whitelisted"
       }
